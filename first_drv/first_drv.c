@@ -20,7 +20,8 @@ static int first_drv_open(struct inode *inode, struct file *file)
 }
 
 static ssize_t first_drv_write(struct file *file, const char __user *buf, size_t count, loff_t * ppos)
-{
+{	
+	printk( "first_drv_write\n");
 	return 0;
 }
 
@@ -30,14 +31,13 @@ static struct file_operations first_drv_fops = {
 	.write	=	first_drv_write,	   
 };
 
-
-
+int major;
 int first_drv_init(void)
 {
-	major=register_chrdev(0,"first_drv",&first_drv_fops);//注册驱动程序，告诉内核
 
-	
+	major = register_chrdev(0,"first_drv",&first_drv_fops);//注册驱动程序，告诉内核
 	return 0;
+	
 }
 
 int first_drv_exit(void)
