@@ -9,6 +9,8 @@
 #include <asm/arch/regs-gpio.h>
 #include <asm/hardware.h>
 
+static struct class *firstdrv_class;  /*Àà*/
+static struct class_device	*firstdrv_class_dev;
 
 
 static int first_drv_open(struct inode *inode, struct file *file)
@@ -36,18 +38,34 @@ int first_drv_init(void)
 {
 
 	major = register_chrdev(0,"first_drv",&first_drv_fops);//×¢²áÇý¶¯³ÌÐò£¬¸æËßÄÚºË
+
+
+	firstdrv_class = class_create(THIS_MODULE, "firstdrv");
+
+
+	firstdrv_class_dev = class_device_create(firstdrv_class, NULL, MKDEV(major, 0), NULL, "xyz"); /* /dev/leds */
+	
 	return 0;
 	
 }
 
 int first_drv_exit(void)
 {
-	unregister_chrdev(111, "first_drv");//Ð¶ÔØ
+	unregister_chrdev(major, "first_drv");//Ð¶ÔØ
+
+	class_device_unregister(firstdrv_class_dev);
+
+
+	class_destroy(firstdrv_class);
+
+
+	
 }
 module_init(first_drv_init);
 
 module_exit(first_drv_exit);
 
+MODULE_LICENSE("GPL");
 
 
 
