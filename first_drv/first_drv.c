@@ -22,8 +22,7 @@ static int first_drv_open(struct inode *inode, struct file *file)
 }
 
 static ssize_t first_drv_write(struct file *file, const char __user *buf, size_t count, loff_t * ppos)
-{	
-	printk( "first_drv_write\n");
+{
 	return 0;
 }
 
@@ -33,10 +32,13 @@ static struct file_operations first_drv_fops = {
 	.write	=	first_drv_write,	   
 };
 
-int major;
+
+
 int first_drv_init(void)
 {
+	major=register_chrdev(0,"first_drv",&first_drv_fops);//×¢²áÇı¶¯³ÌĞò£¬¸æËßÄÚºË
 
+<<<<<<< HEAD
 	major = register_chrdev(0,"first_drv",&first_drv_fops);//×¢²áÇı¶¯³ÌĞò£¬¸æËßÄÚºË
 
 
@@ -46,7 +48,10 @@ int first_drv_init(void)
 	firstdrv_class_dev = class_device_create(firstdrv_class, NULL, MKDEV(major, 0), NULL, "xyz"); /* /dev/leds */
 	
 	return 0;
+=======
+>>>>>>> parent of df8b572... æ‰‹åŠ¨åˆ†é…è®¾å¤‡å·
 	
+	return 0;
 }
 
 int first_drv_exit(void)
