@@ -9,18 +9,43 @@
 #include <asm/arch/regs-gpio.h>
 #include <asm/hardware.h>
 
-
+static struct class *firstdrv_class;  /*Àà*/
+static struct class_device	*firstdrv_class_dev;
+volatile unsigned long *gpfcon =NULL;
+volatile unsigned long *gpfdat =NULL;
 
 static int first_drv_open(struct inode *inode, struct file *file)
 {
-	printk( "first_drv_open\n");
+	//printk( "first_drv_open\n");
+	/*ÅäÖÃgpf4 5 6ÎªÊä³ö*/
+	*gpfcon &=~((0x3<<(4*2))|(0x3<<(5*2))|(0x3<<(6*2)));
+	*gpfcon |= ((0x1<<(4*2))|(0x1<<(5*2))|(0x1<<(6*2)));
+
+	
 	return 0;
   
   
 }
 
 static ssize_t first_drv_write(struct file *file, const char __user *buf, size_t count, loff_t * ppos)
-{
+{	
+
+	int val;
+	copy_from_user(&val, buf, count);
+	if(val==1)
+		{	
+			//µãµÆ
+			
+			*gpfdat &=~((1<<4)|(1<<5)|(1<<6));
+
+		}
+	else
+		{
+	
+			//ÃğµÆ
+			*gpfdat |=(1<<4)|(1<<5)|(1<<6);
+		}
+	//printk( "first_drv_write\n");
 	return 0;
 }
 
@@ -30,29 +55,45 @@ static struct file_operations first_drv_fops = {
 	.write	=	first_drv_write,	   
 };
 
-
-
+int major;
 int first_drv_init(void)
 {
-	major=register_chrdev(0,"first_drv",&first_drv_fops);//×¢²áÇı¶¯³ÌĞò£¬¸æËßÄÚºË
 
-<<<<<<< HEAD
 	major = register_chrdev(0,"first_drv",&first_drv_fops);//×¢²áÇı¶¯³ÌĞò£¬¸æËßÄÚºË
-	return 0;
-=======
->>>>>>> parent of df8b572... æ‰‹åŠ¨åˆ†é…è®¾å¤‡å·
+
+
+	firstdrv_class = class_create(THIS_MODULE, "firstdrv");
+
+
+	firstdrv_class_dev = class_device_create(firstdrv_class, NULL, MKDEV(major, 0), NULL, "xyz"); /* /dev/leds */
+
+
+	gpfcon =(volatile unsigned long *)ioremap(0x56000050,16);
+	gpfdat = gpfcon +1;
+
+
 	
 	return 0;
+	
 }
 
 int first_drv_exit(void)
 {
-	unregister_chrdev(111, "first_drv");//Ğ¶ÔØ
+	unregister_chrdev(major, "first_drv");//Ğ¶ÔØ
+
+	class_device_unregister(firstdrv_class_dev);
+
+
+	class_destroy(firstdrv_class);
+	iounmap(gpfcon);
+
+	
 }
 module_init(first_drv_init);
 
 module_exit(first_drv_exit);
 
+MODULE_LICENSE("GPL");
 
 
 
